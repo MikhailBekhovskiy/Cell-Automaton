@@ -8,6 +8,7 @@ def strfy(a: list[str]) -> str:
         res += el
     return res
 
+# convert symbol matrix to string
 def strfy_matr(A:list[list[str]]) -> str:
     res = ''
     for row in A:
@@ -112,6 +113,7 @@ def watch(history: list[list[list[int]]], pause:float=0.1):
         sleep(pause)
         i += 1
 
+# write run result
 def elder_scrool(history:list[list[list[int]]], period:int, fname:str='nestor.txt'):
     delimiter = '==' * len(history[0]) + '\n'
     thescroll = 'This is a proud colony history. It all began like this:\n'
@@ -136,51 +138,35 @@ def elder_scrool(history:list[list[list[int]]], period:int, fname:str='nestor.tx
     with open(fname, 'w') as f:
         f.write(thescroll)
 
-if __name__ == "__main__":
-    print('Input field size or skip for default (30x30)')
-    size = input('Number of rows:\n')
-
-    if size != '':
-        size = int(size)
-        size2 = input('Number of columns (default is same as number of rows):\n')
-        if size2 != '':
-            size2 = int(size2)
-        else:
-            size2 = size
+# conduct a test run
+def run(max_states:int, size1:int=30, size2:int=30, rand:bool=True) -> tuple[list[list[list[int]]], int]:
+    H:list[list[list[int]]]=[[]]*max_states
+    if rand:
+        H[0] = bin_matr(size1, size2)
     else:
-        size = 30
-        size2 = 30
-
-    # array of states till stop
-    states:list[list[list[int]]] = [[]] * 2000
-    # first state is random
-    states[0] = bin_matr(size, size2)
-    p = population(states[0])
-    print(f'Initial population is: {p} ({p/size/size2*100:.2f}%)')
+        H[0] = zeros(size1, size2)
     i = 0
-    # repeat flag
-    history_repeats_itself = False
-    # size of period
-    cycle_length=-1
-    # maximum 2000 states or until period encountered
-    while not history_repeats_itself and i < 2000:
-        states[i+1] = next_state(states[i])
+    period = -1
+    rep = False
+    while not rep and i < len(H) - 1:
+        H[i+1] = next_state(H[i])
         i += 1
-        history_repeats_itself, cycle_length = past_research(states, i)
+        rep, period = past_research(H, i)
+    return H[:i+1], period
 
-    p = population(states[i])
-    print(f'Finish. Colony age is {i-1}. Final population is {p}({p/size/size2*100:.2f}%).')
-    if history_repeats_itself and cycle_length > 1:
-        type = f'colony is cyclic with period = {cycle_length}'
-    elif history_repeats_itself:
-        type = 'colony reached stationary state'
-    else:
-        type = 'colony died from old age'
-    print(f'Stop condition: {type}')
-    Nestor = input('Do you wish to save this fate for posterity?\n')
-    if Nestor != '' and Nestor[0] in {'Y', 'y'}:
-        elder_scrool(states[:i+1], cycle_length)
-    print('Do you wish to watch animation?')
-    watching = input()
-    if watching != '' and watching[0] in {'y', 'Y'}:
-        watch(states)
+# check whether a state is static
+def is_static_state(S: list[list[int]]) -> bool:
+    Sn = next_state(S)
+    if equality(Sn, S):
+        return True
+    return False
+
+# TODO find all static states for given matrix size
+def find_static_states(n:int, m:int):
+    pass
+
+
+if __name__ == "__main__":
+    states, per = run(2000)
+    watch(states)
+    elder_scrool(states, per)
