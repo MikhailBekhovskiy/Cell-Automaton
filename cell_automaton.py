@@ -1,39 +1,46 @@
 from random import randint
 from time import sleep
 
-def strfy(a: list) -> str:
+# duplicate .join() for education purposes
+def strfy(a: list[str]) -> str:
     res = ''
     for el in a:
-        res += str(el)
+        res += el
     return res
 
+# insert whitespaces between every symbol
 def pad(s: str) -> str:
     res = ''
     for letter in s:
         res += letter + ' '
     return res
 
-def symbolize(A: list, replace={0: '-', 1: '+'}) -> list:
-    B = zeros(len(A))
+# prepare binary matrix for printing
+def symbolize(A: list[list[int]], replace:dict[int, str]={0: '-', 1: '+'}) -> list[list[str]]:
+    B:list[list[str]] = [[]] * len(A)
     for i in range(len(A)):
+        B[i] = [''] * len(A)
         for j in range(len(A)):
             B[i][j] = replace[A[i][j]]
     return B
 
-def zeros(n: int) -> list:
-    c = [None]*n
+# generate default square numeric matrix
+def zeros(n: int) -> list[list[int]]:
+    c:list[list[int]] = [[]]*n
     for i in range(n):
         c[i] = [0]*n
     return c
 
-def bin_matr(n: int)->list:
+# generate randomized binary square matrix
+def bin_matr(n: int)->list[list[int]]:
     B = zeros(n)
     for i in range(n):
         for j in range(n):
             B[i][j] = randint(0,1)
     return B
 
-def count_alive_neighbours(A: list, i: int, j: int) -> int:
+# calculate neighbours for a given cell
+def count_alive_neighbours(A: list[list[int]], i: int, j: int) -> int:
     res = 0
     for k in range (i-1, i+2):
         for l in range(j-1, j+2):
@@ -42,7 +49,8 @@ def count_alive_neighbours(A: list, i: int, j: int) -> int:
                     res += 1
     return res
 
-def next_state(A: list) -> list:
+# transition to the next state
+def next_state(A: list[list[int]]) -> list[list[int]]:
     res = zeros(len(A))
     for i in range(len(A)):
         for j in range(len(A)):
@@ -52,28 +60,32 @@ def next_state(A: list) -> list:
                 res[i][j] = 1
     return res
 
-def printout(A:list):
+# print binary matrix to console 
+def printout(A:list[list[int]]):
     B = symbolize(A)
     for row in B:
         print(pad(strfy(row)))
 
-def equality(A: list, B: list) -> bool:
+# check binary matrices for equality
+def equality(A: list[list[int]], B: list[list[int]]) -> bool:
     for i in range(len(A)):
         for j in range(len(A)):
             if A[i][j] != B[i][j]:
                 return False
     return True
 
-def past_research(history: list, present: int) -> tuple:
+# try to find repeating states in array of states
+def past_research(history: list[list[list[int]]], present: int) -> tuple[bool, int]:
     start = present-1
     for i in range(start, -1, -1):
         if equality(history[present], history[i]):
             return True, present - i
-    return False, None
+    return False, 0
 
-def watch(history: list, pause=0.1):
+# print array of states one by one
+def watch(history: list[list[list[int]]], pause:float=0.1):
     i = 0
-    while i < len(history) and history[i] != None:
+    while i < len(history) and history[i] != []:
         printout(history[i])
         print()
         sleep(pause)
@@ -88,10 +100,16 @@ if __name__ == "__main__":
     else:
         size = 30
 
-    states = [None] * 2000
+    # array of states till stop
+    states:list[list[list[int]]] = [[]] * 2000
+    # first state is random
     states[0] = bin_matr(size)
     i = 0
+    # repeat flag
     history_repeats_itself = False
+    # size of period
+    cycle_length=-1
+    # maximum 2000 states or until period encountered
     while not history_repeats_itself and i < 2000:
         states[i+1] = next_state(states[i])
         i += 1
@@ -107,5 +125,5 @@ if __name__ == "__main__":
     print(f'Stop condition: {type}')
     print('Do you wish to watch this?')
     watching = input()
-    if watching == 'yes':
+    if watching[0] in {'y', 'Y'}:
         watch(states)
