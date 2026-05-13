@@ -50,6 +50,46 @@ def bin_matr(n: int, m:int=0)->list[list[int]]:
             B[i][j] = randint(0,1)
     return B
 
+# M2v transform
+def squash_bin_matr(B:list[list[int]]) -> list[int]:
+    res:list[int] = [0] * (len(B) * len(B[0]))
+    for i in range(len(B)):
+        for j in range(len(B[0])):
+            res[i * len(B[0]) + j] = B[i][j]
+    return res
+
+# v2M transform
+def unfold_bin_vec(b: list[int], n:int, m: int) -> list[list[int]]:
+    B:list[list[int]] = [[]] * n
+    for i in range(n):
+        B[i] = [0] * m
+        for j in range(m):
+            B[i][j] = b[i*m + j]
+    return B
+
+# binary +1
+def next_bin_vec(b: list[int]) -> list[int]:
+    res:list[int] = [0] * len(b)
+    i = 0
+    while i < len(b) and b[i] == 1:
+        res[i] = 0
+        i += 1
+    if i < len(res):
+        res[i] = 1
+        for j in range(i+1, len(b)):
+            res[j] = b[j]
+    else:
+        res += [1]
+    return res
+
+# matrix counting
+def next_bin_matr(A:list[list[int]]) -> list[list[int]]:
+    a = squash_bin_matr(A)
+    a1 = next_bin_vec(a)
+    if len(a1) == len(A) * len(A[0]):
+        return unfold_bin_vec(a1, len(A), len(A[0]))
+    return zeros(len(A), len(A[0]))
+
 # calculate neighbours for a given cell
 def count_alive_neighbours(A: list[list[int]], i: int, j: int) -> int:
     res = 0
@@ -161,12 +201,21 @@ def is_static_state(S: list[list[int]]) -> bool:
         return True
     return False
 
-# TODO find all static states for given matrix size
+# find all static states for given matrix size
 def find_static_states(n:int, m:int):
-    pass
+    stats:list[list[list[int]]] = []
+    s = zeros(n, m)
+    for _ in range(2 ** (n*m) - 1):
+        s = next_bin_matr(s)
+        if is_static_state(s):
+            stats.append(s)
+    return stats
+
 
 
 if __name__ == "__main__":
-    states, per = run(2000)
-    watch(states)
-    elder_scrool(states, per)
+    # states, per = run(2000)
+    # watch(states)
+    # elder_scrool(states, per)
+    # S = find_static_states(4, 4)
+    pass
