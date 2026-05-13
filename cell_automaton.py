@@ -8,6 +8,12 @@ def strfy(a: list[str]) -> str:
         res += el
     return res
 
+def strfy_matr(A:list[list[str]]) -> str:
+    res = ''
+    for row in A:
+        res += pad(strfy(row)) + '\n'
+    return res
+
 # insert whitespaces between every symbol
 def pad(s: str) -> str:
     res = ''
@@ -53,6 +59,15 @@ def count_alive_neighbours(A: list[list[int]], i: int, j: int) -> int:
                     res += 1
     return res
 
+# count alive cells
+def population(A:list[list[int]]) -> int:
+    pop = 0
+    for row in A:
+        for el in row:
+            if el == 1:
+                pop += 1
+    return pop
+
 # transition to the next state
 def next_state(A: list[list[int]]) -> list[list[int]]:
     res = zeros(len(A), len(A[0]))
@@ -97,6 +112,30 @@ def watch(history: list[list[list[int]]], pause:float=0.1):
         sleep(pause)
         i += 1
 
+def elder_scrool(history:list[list[list[int]]], period:int, fname:str='nestor.txt'):
+    delimiter = '==' * len(history[0]) + '\n'
+    thescroll = 'This is a proud colony history. It all began like this:\n'
+    thescroll += delimiter
+    thescroll += strfy_matr(symbolize(history[0]))
+    thescroll += delimiter
+    thescroll += f'There were {population(history[0])} living beings.\n'
+    thescroll += f'After {len(history)} generations '
+    if period > 1:
+        thescroll += f'the colony achieved a healthy,\nunevanescing oscillation with {period} different states.\n'
+        thescroll += 'This is the cycle:\n'
+        thescroll += delimiter
+        for i in range(len(history)-period-1, len(history) - 1):
+            thescroll += strfy_matr(symbolize(history[i]))
+            thescroll += delimiter
+    else:
+        thescroll += 'the colony became set in stone.\n'
+    thescroll += f'And this is how it ended with {population(history[len(history)-1])} creatures:\n'
+    thescroll += delimiter
+    thescroll += strfy_matr(symbolize(history[len(history)-1]))
+    thescroll += delimiter
+    with open(fname, 'w') as f:
+        f.write(thescroll)
+
 if __name__ == "__main__":
     print('Input field size or skip for default (30x30)')
     size = input('Number of rows:\n')
@@ -116,6 +155,8 @@ if __name__ == "__main__":
     states:list[list[list[int]]] = [[]] * 2000
     # first state is random
     states[0] = bin_matr(size, size2)
+    p = population(states[0])
+    print(f'Initial population is: {p} ({p/size/size2*100:.2f}%)')
     i = 0
     # repeat flag
     history_repeats_itself = False
@@ -127,7 +168,8 @@ if __name__ == "__main__":
         i += 1
         history_repeats_itself, cycle_length = past_research(states, i)
 
-    print(f'Finish. Colony age is {i-1}')
+    p = population(states[i])
+    print(f'Finish. Colony age is {i-1}. Final population is {p}({p/size/size2*100:.2f}%).')
     if history_repeats_itself and cycle_length > 1:
         type = f'colony is cyclic with period = {cycle_length}'
     elif history_repeats_itself:
@@ -135,7 +177,10 @@ if __name__ == "__main__":
     else:
         type = 'colony died from old age'
     print(f'Stop condition: {type}')
-    print('Do you wish to watch this?')
+    Nestor = input('Do you wish to save this fate for posterity?\n')
+    if Nestor != '' and Nestor[0] in {'Y', 'y'}:
+        elder_scrool(states[:i+1], cycle_length)
+    print('Do you wish to watch animation?')
     watching = input()
     if watching != '' and watching[0] in {'y', 'Y'}:
         watch(states)
