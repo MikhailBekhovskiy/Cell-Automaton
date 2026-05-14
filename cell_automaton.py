@@ -1,6 +1,12 @@
 from random import randint
 from time import sleep
 
+# sets ranges of next state life for each cell state
+RULEBOOK = {
+    0: (2,4),
+    1: (1,4)
+}
+
 # duplicate .join() for education purposes
 def strfy(a: list[str]) -> str:
     res = ''
@@ -110,13 +116,14 @@ def population(A:list[list[int]]) -> int:
     return pop
 
 # transition to the next state
-def next_state(A: list[list[int]]) -> list[list[int]]:
+def next_state(A: list[list[int]], rules:dict[int, tuple[int,int]]=RULEBOOK) -> list[list[int]]:
     res = zeros(len(A), len(A[0]))
     for i in range(len(A)):
         for j in range(len(A[0])):
-            if A[i][j] == 0 and count_alive_neighbours(A, i, j) == 3:
+            neigh = count_alive_neighbours(A, i, j)
+            if A[i][j] == 0 and rules[0][0] < neigh < rules[0][1]:
                 res[i][j] = 1
-            elif A[i][j] == 1 and (count_alive_neighbours(A, i, j) == 2 or count_alive_neighbours(A,i,j) == 3):
+            elif A[i][j] == 1 and rules[1][0] < neigh < rules[1][1]:
                 res[i][j] = 1
     return res
 
@@ -214,8 +221,8 @@ def find_static_states(n:int, m:int):
 
 
 if __name__ == "__main__":
-    # states, per = run(2000)
-    # watch(states)
-    # elder_scrool(states, per)
+    states, per = run(2000)
+    watch(states)
+    elder_scrool(states, per)
     # S = find_static_states(4, 4)
     pass
