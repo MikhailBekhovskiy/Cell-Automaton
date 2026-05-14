@@ -2,9 +2,10 @@ from random import randint
 from time import sleep
 
 # sets ranges of next state life for each cell state
+# boundaries not included
 RULEBOOK = {
-    0: (2,4),
-    1: (1,4)
+    0: (2,4), # only 3 live neighbours can create life
+    1: (1,4) # 2 or 3 neighbors keep cell alive
 }
 
 # duplicate .join() for education purposes
